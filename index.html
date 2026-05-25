@@ -1,3 +1,164 @@
+Refactor poem map
+
+
+
+Ahh, you've changed the whole structure. What I wanted was for the constellation headers to remain as my poem, and the found poem to appear only in the small text box below.
+19:50
+
+
+Worked for 1m 36s
+Yes, exactly. I’ve put that structure back.
+
+Now the main constellation/header text remains your authored poem. Gather only writes the generated/found poem into the small text box below.
+
+Current behaviour locally:
+
+Click a star: main panel shows your original line.
+Click Gather: generated line appears only in the text box.
+Click Gather with no star selected: a six-line generated constellation appears only in the text box.
+Save line saves that draft text for the selected star, but does not replace the main authored poem.
+Restore clears the draft and returns the text box to your original line.
+I tested both selected-star generation and whole-constellation generation; no browser errors.
+
+
+Six Roads In
+Website
+Open in
+
+
+
+
+19:52
+Oh, that works perfectly - thank you. Do I need to upload to github?
+19:52
+
+Yes. The version working locally now is newer than the GitHub Pages version, so it needs uploading if you want the public site to match.
+
+Upload/replace these two files in the GitHub repo:
+
+index.html
+script.js
+You don’t need to change README.md.
+
+Once uploaded, GitHub Pages should update at https://sjfc.github.io/six-roads-in/ after a short build delay.
+
+
+
+
+
+19:52
+how do I see your files so I can control A and replace?
+19:53
+
+You can open the folder here:
+
+Project folder
+
+The two files you need are:
+
+index.html
+script.js
+
+To replace on GitHub:
+
+Open the local file, e.g. index.html.
+Select all text with Command + A.
+Copy with Command + C.
+Go to GitHub: six-roads-in/index.html.
+Click the pencil/edit icon.
+Select all existing text in GitHub with Command + A.
+Paste with Command + V.
+Commit changes.
+Repeat for script.js.
+Make sure you replace index.html with index.html, and script.js with script.js.
+
+
+
+
+
+19:53
+With the index file when I open up I can only see the preview
+19:55
+
+That’s normal: double-clicking index.html opens it as a webpage preview, not as editable code.
+
+To see the code, open it with a text editor instead:
+
+Open Finder.
+Go to this folder:
+/Users/sarahjanecrowson/Documents/Codex/2026-05-25/hi-i-am-very-hot-as
+Right-click index.html.
+Choose Open With.
+Pick TextEdit, Visual Studio Code, BBEdit, or any plain text/code editor.
+Then use Command + A and Command + C.
+If using TextEdit, it may try to be too “helpful.” Choose Format > Make Plain Text before copying, if you see formatting rather than code.
+
+You can do the same for script.js; that one should usually open as plain code more easily.
+
+
+
+
+
+19:55
+Nope, that isn't working. Can you post the index text here for me to copy?
+19:58
+
+
+
+Worked for 1m 19s
+I’ve fixed the local files so you don’t need to copy from the browser preview.
+
+Use this file instead:
+
+index-copy.txt
+
+That is the full index.html source, but saved as plain text so it should open as copyable code rather than as a webpage preview.
+
+I also restored the actual HTML file here:
+
+index.html
+
+For GitHub, open index-copy.txt, select all, copy it, then paste it into GitHub’s index.html editor.
+
+
+
+
+
+19:59
+
+
+
+
+
+5.5
+Medium
+
+
+
+Outputs
+index.html
+README.md
+
+Tasks
+Background terminal
+
+
+Browser
+Six Roads In
+
+Sources
+Web search
+
+Six Roads In
+
+index-copy.txt
+
+
+hi-i-am-very-hot-as
+index-copy.txt
+
+
+
 <!doctype html>
 <!--
   Six Roads In
@@ -24,16 +185,13 @@
       --shadow: 0 24px 70px rgba(5, 7, 12, 0.34);
       --radius: 8px;
     }
-
     * {
       box-sizing: border-box;
     }
-
     html,
     body {
       min-height: 100%;
     }
-
     body {
       margin: 0;
       font-family: ui-serif, Georgia, "Times New Roman", serif;
@@ -43,19 +201,16 @@
         linear-gradient(315deg, rgba(41, 49, 66, 0.24), transparent 44%),
         #e8dcc0;
     }
-
     button,
     textarea {
       font: inherit;
     }
-
     .poem-map {
       min-height: 100vh;
       display: grid;
       grid-template-columns: minmax(0, 1fr) minmax(310px, 430px);
       overflow: hidden;
     }
-
     .map-field {
       position: relative;
       min-height: 100vh;
@@ -74,7 +229,6 @@
         radial-gradient(circle at 48% 42%, rgba(213, 139, 98, 0.16), transparent 24%),
         linear-gradient(145deg, #202531 0%, #11151e 46%, #070910 100%);
     }
-
     .map-field::before,
     .map-field::after {
       content: "";
@@ -83,7 +237,6 @@
       pointer-events: none;
       z-index: 0;
     }
-
     .map-field::before {
       background:
         radial-gradient(circle at 36% 54%, transparent 0 15%, rgba(236, 224, 197, 0.16) 15.2% 15.45%, transparent 15.7%),
@@ -93,711 +246,7 @@
         linear-gradient(115deg, transparent 0 45%, rgba(236, 224, 197, 0.09) 45.1% 45.25%, transparent 45.45%);
       mix-blend-mode: screen;
     }
-
     .map-field::after {
       background-image:
         repeating-linear-gradient(90deg, transparent 0 71px, rgba(236, 224, 197, 0.07) 72px 73px),
         repeating-linear-gradient(0deg, transparent 0 71px, rgba(236, 224, 197, 0.055) 72px 73px);
-      opacity: 0.7;
-      mask-image: linear-gradient(to right, #000 0%, transparent 84%);
-    }
-
-    .title-block {
-      position: absolute;
-      top: clamp(24px, 5vw, 58px);
-      left: clamp(22px, 5vw, 72px);
-      z-index: 2;
-      max-width: min(620px, calc(100% - 44px));
-    }
-
-    h1 {
-      margin: 0;
-      max-width: 11ch;
-      font-size: clamp(3.5rem, 9.5vw, 8rem);
-      line-height: 0.9;
-      letter-spacing: 0;
-      font-weight: 500;
-      color: var(--ink);
-      text-shadow: 0 2px 16px rgba(255, 247, 217, 0.12);
-    }
-
-    .weather-note {
-      max-width: 34ch;
-      margin: 24px 0 0;
-      color: rgba(236, 224, 197, 0.84);
-      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      font-size: clamp(0.9rem, 1.4vw, 1.05rem);
-      line-height: 1.5;
-    }
-
-    .road {
-      position: absolute;
-      z-index: 1;
-      width: var(--road-length, max(18vw, 180px));
-      height: 18px;
-      border: 0;
-      padding: 0;
-      background: transparent;
-      transform-origin: left center;
-      transform: rotate(var(--road-angle, 0deg));
-      cursor: pointer;
-    }
-
-    .road::before {
-      content: "";
-      position: absolute;
-      inset: 8px 0;
-      height: 1px;
-      border: 0;
-      background: linear-gradient(90deg, rgba(255, 247, 217, 0.18), rgba(255, 247, 217, 0.58), rgba(255, 247, 217, 0.16));
-      box-shadow: 0 0 12px rgba(255, 247, 217, 0.14);
-      transition: transform 180ms ease, background 180ms ease, box-shadow 180ms ease;
-    }
-
-    .road.is-active::before,
-    .road:hover::before {
-      background: linear-gradient(90deg, rgba(213, 139, 98, 0.22), rgba(213, 139, 98, 0.9), rgba(213, 139, 98, 0.2));
-      box-shadow: 0 0 18px rgba(213, 139, 98, 0.35);
-      transform: scaleX(1.04);
-    }
-
-    .memory-road::before {
-      inset: 6px 0;
-      border-top: 0;
-      border-bottom: 0;
-      background-image: radial-gradient(circle, rgba(157, 182, 191, 0.95) 0 1.5px, transparent 2px);
-      background-size: 13px 3px;
-      height: 3px;
-      opacity: 0.86;
-      box-shadow: 0 0 14px rgba(157, 182, 191, 0.32);
-    }
-
-    .memory-road.is-active::before,
-    .memory-road:hover::before {
-      background-image: radial-gradient(circle, rgba(213, 139, 98, 0.96) 0 1.7px, transparent 2.2px);
-    }
-
-    .pin {
-      position: absolute;
-      z-index: 3;
-      width: 18px;
-      height: 18px;
-      border: 0;
-      padding: 0;
-      color: var(--chalk);
-      background: transparent;
-      cursor: pointer;
-      transform: translate(-50%, -50%);
-    }
-
-    .pin-dot {
-      display: block;
-      width: 18px;
-      aspect-ratio: 1;
-      border: 0;
-      border-radius: 50%;
-      background: currentColor;
-      box-shadow:
-        0 0 0 3px rgba(255, 247, 217, 0.08),
-        0 0 18px rgba(255, 247, 217, 0.55);
-      transform: scale(0.62);
-      transition: background 160ms ease, box-shadow 160ms ease, transform 160ms ease;
-    }
-
-    .pin-dot::before,
-    .pin-dot::after {
-      content: "";
-      position: absolute;
-      inset: 50% auto auto 50%;
-      width: 30px;
-      height: 1px;
-      background: currentColor;
-      opacity: 0.72;
-      transform: translate(-50%, -50%);
-      pointer-events: none;
-    }
-
-    .pin-dot::after {
-      transform: translate(-50%, -50%) rotate(90deg);
-    }
-
-    .pin-label {
-      position: absolute;
-      top: 50%;
-      left: 28px;
-      transform: translateY(-50%);
-      max-width: 16ch;
-      color: rgba(236, 224, 197, 0.88);
-      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      font-size: 0.84rem;
-      line-height: 1.1;
-      text-align: left;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      text-shadow: 0 0 10px rgba(255, 247, 217, 0.2);
-      transition: opacity 160ms ease;
-      white-space: nowrap;
-    }
-
-    .pin[data-label="left"] .pin-label {
-      right: 28px;
-      left: auto;
-      text-align: right;
-    }
-
-    .pin[data-label="above"] .pin-label {
-      top: auto;
-      bottom: 28px;
-      left: 50%;
-      transform: translateX(-50%);
-      text-align: center;
-    }
-
-    .pin[data-label="below"] .pin-label {
-      top: 28px;
-      left: 50%;
-      transform: translateX(-50%);
-      text-align: center;
-    }
-
-    .pin.is-active .pin-dot,
-    .pin:hover .pin-dot {
-      color: var(--clay);
-      box-shadow:
-        0 0 0 5px rgba(213, 139, 98, 0.12),
-        0 0 24px rgba(213, 139, 98, 0.74);
-      transform: scale(0.9);
-    }
-
-    .distance {
-      width: 92px;
-      height: 58px;
-      transform: translate(-18%, -62%);
-    }
-
-    .distance .pin-dot {
-      position: absolute;
-      left: 8px;
-      bottom: 6px;
-      width: 13px;
-      color: var(--water);
-      opacity: 0.95;
-    }
-
-    .distance .pin-dot::before,
-    .distance .pin-dot::after {
-      width: 24px;
-    }
-
-    .hill-sketch {
-      position: absolute;
-      left: 0;
-      bottom: 0;
-      width: 92px;
-      color: rgba(236, 224, 197, 0.92);
-      opacity: 0.9;
-      pointer-events: none;
-    }
-
-    .hill-sketch svg {
-      display: block;
-      width: 100%;
-      height: auto;
-      overflow: visible;
-    }
-
-    .hill-sketch path {
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 1.4;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      vector-effect: non-scaling-stroke;
-    }
-
-    .hill-sketch circle {
-      fill: var(--chalk);
-      filter: drop-shadow(0 0 5px rgba(255, 247, 217, 0.66));
-    }
-
-    .distance .pin-label {
-      left: 96px;
-      color: var(--water);
-    }
-
-    .distance.is-active .hill-sketch,
-    .distance:hover .hill-sketch {
-      color: var(--clay);
-      opacity: 1;
-    }
-
-    .distance:focus-visible {
-      outline-offset: 8px;
-    }
-
-    .pin:focus-visible,
-    .tool-button:focus-visible,
-    textarea:focus-visible {
-      outline: 3px solid rgba(86, 127, 146, 0.85);
-      outline-offset: 4px;
-    }
-
-    .poem-panel {
-      position: relative;
-      z-index: 4;
-      min-height: 100vh;
-      max-height: 100vh;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 28px;
-      padding: clamp(22px, 4vw, 48px);
-      background:
-        linear-gradient(180deg, rgba(250, 239, 207, 0.94), rgba(232, 218, 183, 0.9)),
-        var(--paper);
-      border-left: 1px solid rgba(236, 224, 197, 0.18);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(18px);
-    }
-
-    .place-name {
-      margin: 0;
-      color: var(--clay);
-      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      font-size: 0.86rem;
-      line-height: 1.2;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-    }
-
-    .place-mode {
-      margin: 8px 0 0;
-      color: var(--water);
-      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      font-size: 0.78rem;
-      line-height: 1.2;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-    }
-
-    .poem-text {
-      margin: 18px 0 0;
-      font-size: clamp(1.8rem, 3.4vw, 3.25rem);
-      line-height: 1.04;
-      letter-spacing: 0;
-    }
-
-    .thread {
-      margin: 24px 0 0;
-      color: var(--muted);
-      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      font-size: 0.95rem;
-      line-height: 1.55;
-      white-space: pre-line;
-    }
-
-    .editor {
-      display: grid;
-      gap: 12px;
-    }
-
-    .editor label {
-      color: var(--muted);
-      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      font-size: 0.82rem;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-    }
-
-    textarea {
-      width: 100%;
-      min-height: 126px;
-      resize: vertical;
-      border: 1px solid rgba(32, 32, 29, 0.2);
-      border-radius: var(--radius);
-      padding: 14px;
-      color: #211f1a;
-      background: rgba(255, 250, 236, 0.68);
-      line-height: 1.45;
-    }
-
-    .tool-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .tool-button {
-      min-height: 40px;
-      border: 1px solid rgba(32, 32, 29, 0.22);
-      border-radius: var(--radius);
-      padding: 0 13px;
-      color: var(--ink);
-      background: rgba(255, 250, 236, 0.78);
-      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      font-size: 0.9rem;
-      cursor: pointer;
-    }
-
-    .tool-button:hover {
-      background: #fff7d9;
-    }
-
-    .tool-button.primary {
-      border-color: #211f1a;
-      color: #fff7d9;
-      background: #211f1a;
-    }
-
-    .status {
-      min-height: 1.3em;
-      margin: 0;
-      color: var(--muted);
-      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      font-size: 0.84rem;
-      line-height: 1.4;
-    }
-
-    .heat {
-      animation: heat-shimmer 9s ease-in-out infinite alternate;
-    }
-
-    @keyframes heat-shimmer {
-      from {
-        filter: saturate(1) contrast(1);
-      }
-      to {
-        filter: saturate(1.15) contrast(1.04);
-      }
-    }
-
-    @media (max-width: 860px) {
-      .poem-map {
-        grid-template-columns: 1fr;
-      }
-
-      .map-field {
-        min-height: 62vh;
-        --map-left: 7%;
-        --map-right: 7%;
-        --map-top: 40%;
-        --map-bottom: 12%;
-      }
-
-      .poem-panel {
-        min-height: auto;
-        border-left: 0;
-        border-top: 1px solid rgba(32, 32, 29, 0.16);
-      }
-
-      .pin-label {
-        max-width: 12ch;
-        padding: 3px 5px;
-        overflow: hidden;
-        background: rgba(255, 250, 240, 0.72);
-        font-size: 0.66rem;
-        opacity: 0;
-        pointer-events: none;
-        text-overflow: ellipsis;
-      }
-
-      .distance {
-        width: 66px;
-        height: 42px;
-      }
-
-      .hill-sketch {
-        width: 66px;
-      }
-
-      .distance .pin-label {
-        display: none;
-      }
-
-
-      .road {
-        width: max(24vw, 118px);
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *,
-      *::before,
-      *::after {
-        scroll-behavior: auto !important;
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-      }
-    }
-  </style>
-</head>
-<body>
-  <main class="poem-map heat" aria-labelledby="title">
-    <section class="map-field" aria-label="Six roads map">
-      <div class="title-block">
-        <h1 id="title">Six Roads In</h1>
-      </div>
-
-      <button class="road road-one" type="button" data-road-for="Mordiford" aria-label="Road to Mordiford"></button>
-      <button class="road road-two" type="button" data-road-for="Tarrington" aria-label="Road to Tarrington"></button>
-      <button class="road road-three" type="button" data-road-for="Dormington" aria-label="Road to Dormington"></button>
-      <button class="road road-four" type="button" data-road-for="Lugwardine" aria-label="Road to Lugwardine"></button>
-      <button class="road road-five" type="button" data-road-for="Hereford" aria-label="Road to Hereford"></button>
-      <button class="road road-six memory-road" type="button" data-road-for="Radnorshire" aria-label="Sight line to Radnorshire"></button>
-
-      <button class="pin dormington" type="button"
-        data-place="Dormington"
-        data-lat="52.0573"
-        data-lon="-2.61262"
-        data-label="below"
-        data-poem="crow lands on a fingerpost, points to different directions of travel"
-        data-thread="a small omen at the edge of the road; choice made visible, then gone">
-        <span class="pin-dot"></span>
-        <span class="pin-label">Dormington</span>
-      </button>
-
-      <button class="pin mordiford" type="button"
-        data-place="Mordiford"
-        data-lat="52.0338"
-        data-lon="-2.6283"
-        data-label="below"
-        data-poem="and all the while, the Mordiford dragon sleeps, tail curled like a snail shell"
-        data-thread="legend folded into lane, river, orchard, a green hush under the tongue">
-        <span class="pin-dot"></span>
-        <span class="pin-label">Mordiford</span>
-      </button>
-
-      <button class="pin tarrington" type="button"
-        data-place="Tarrington"
-        data-lat="52.0639"
-        data-lon="-2.55951"
-        data-label="right"
-        data-poem="lady with eyes like voles, a pheasant flies into the road, dies on your vast car"
-        data-thread="heat, impact, witness; the lane turns suddenly theatrical and cruel">
-        <span class="pin-dot"></span>
-        <span class="pin-label">Tarrington</span>
-      </button>
-
-      <button class="pin hereford" type="button"
-        data-place="Hereford"
-        data-lat="52.05684"
-        data-lon="-2.71482"
-        data-label="left"
-        data-poem="Hereford, light fingered city stealing time in a palm of hills"
-        data-thread="bells loosen in the heat; the old stones keep their own weather">
-        <span class="pin-dot"></span>
-        <span class="pin-label">Hereford</span>
-      </button>
-
-      <button class="pin lugwardine" type="button"
-        data-place="Lugwardine"
-        data-lat="52.0667"
-        data-lon="-2.66344"
-        data-label="above"
-        data-poem="over the brow of the small hill at Lugwardine, the strangeness of Wales rises from rain"
-        data-thread="weather becomes border, border becomes atmosphere, atmosphere becomes thought">
-        <span class="pin-dot"></span>
-        <span class="pin-label">Lugwardine</span>
-      </button>
-
-      <button class="pin distance" type="button"
-        aria-label="Radnorshire / Hergest Ridge"
-        data-place="Radnorshire"
-        data-lat="52.19938"
-        data-lon="-3.09067"
-        data-label="right"
-        data-poem="Radnorshire, higher than spires or cities. Hergest ridge caught fast in a hard frost"
-        data-thread="not the road travelled, but the hill seen from it; thought-memory held on the horizon">
-        <span class="pin-dot"></span>
-        <span class="hill-sketch" aria-hidden="true">
-          <svg viewBox="0 0 124 58" focusable="false">
-            <path d="M9 43 L26 32 L43 36 L61 20 L79 31 L96 28 L116 43" />
-            <path d="M19 48 L42 43 L65 47 L89 42 L112 48" />
-            <circle cx="9" cy="43" r="2.2" />
-            <circle cx="26" cy="32" r="2.4" />
-            <circle cx="43" cy="36" r="1.8" />
-            <circle cx="61" cy="20" r="2.8" />
-            <circle cx="79" cy="31" r="2" />
-            <circle cx="96" cy="28" r="2.2" />
-            <circle cx="116" cy="43" r="1.8" />
-          </svg>
-        </span>
-        <span class="pin-label">Radnorshire</span>
-      </button>
-    </section>
-
-    <section class="poem-panel" aria-live="polite">
-      <div>
-        <p class="place-name">Six Roads In</p>
-        <p class="place-mode">Road memory</p>
-        <p class="poem-text">Choose a road on the map.</p>
-        <p class="thread">An old experiment, reopened in the heat.</p>
-      </div>
-
-      <div class="editor" aria-label="Poem line editor">
-        <label for="poem-edit">Current line</label>
-        <textarea id="poem-edit" spellcheck="true">Choose a road on the map.</textarea>
-        <div class="tool-row">
-          <button class="tool-button primary" type="button" data-action="save">Save line</button>
-          <button class="tool-button" type="button" data-action="restore">Restore</button>
-         <button class="tool-button" id="gather" type="button" data-action="gather">Gather</button>
-        </div>
-        <p class="status" role="status"></p>
-      </div>
-    </section>
-  </main>
-
-  <script>
-    const pins = Array.from(document.querySelectorAll(".pin"));
-    const roads = Array.from(document.querySelectorAll(".road"));
-    const placeName = document.querySelector(".place-name");
-    const placeMode = document.querySelector(".place-mode");
-    const poemText = document.querySelector(".poem-text");
-    const thread = document.querySelector(".thread");
-    const edit = document.querySelector("#poem-edit");
-    const status = document.querySelector(".status");
-    const storageKey = "six-roads-in-lines";
-    const mapField = document.querySelector(".map-field");
-    const mapBounds = {
-      minLat: 52.02,
-      maxLat: 52.215,
-      minLon: -3.12,
-      maxLon: -2.53
-    };
-    let currentPin = null;
-
-    const savedLines = JSON.parse(localStorage.getItem(storageKey) || "{}");
-
-    function cssPercent(name) {
-      const value = window.getComputedStyle(mapField).getPropertyValue(name);
-      return Number.parseFloat(value) / 100;
-    }
-
-    function projectedPoint(pin) {
-      const leftPad = cssPercent("--map-left");
-      const rightPad = cssPercent("--map-right");
-      const topPad = cssPercent("--map-top");
-      const bottomPad = cssPercent("--map-bottom");
-      const lat = Number.parseFloat(pin.dataset.lat);
-      const lon = Number.parseFloat(pin.dataset.lon);
-      const xRange = 1 - leftPad - rightPad;
-      const yRange = 1 - topPad - bottomPad;
-      const x = leftPad + ((lon - mapBounds.minLon) / (mapBounds.maxLon - mapBounds.minLon)) * xRange;
-      const y = topPad + ((mapBounds.maxLat - lat) / (mapBounds.maxLat - mapBounds.minLat)) * yRange;
-      return { x, y };
-    }
-
-    function placeGeoPins() {
-      const field = mapField.getBoundingClientRect();
-      const hereford = pins.find((pin) => pin.dataset.place === "Hereford");
-      const herefordPoint = projectedPoint(hereford);
-
-      pins.forEach((pin) => {
-        const point = projectedPoint(pin);
-        pin.style.left = `${point.x * 100}%`;
-        pin.style.top = `${point.y * 100}%`;
-      });
-
-      roads.forEach((road) => {
-        const target = pins.find((pin) => pin.dataset.place === road.dataset.roadFor);
-        if (!target) return;
-
-        const targetPoint = projectedPoint(target);
-        const startX = herefordPoint.x * field.width;
-        const startY = herefordPoint.y * field.height;
-        const endX = targetPoint.x * field.width;
-        const endY = targetPoint.y * field.height;
-        const dx = endX - startX;
-        const dy = endY - startY;
-        const fullLength = Math.hypot(dx, dy);
-        const memoryOffset = road.classList.contains("memory-road") ? 30 : 0;
-        const lineStartX = startX + (dx / fullLength) * memoryOffset;
-        const lineStartY = startY + (dy / fullLength) * memoryOffset;
-        const length = Math.max(fullLength - memoryOffset, 1);
-        const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-
-        road.style.left = `${(lineStartX / field.width) * 100}%`;
-        road.style.top = `${(lineStartY / field.height) * 100}%`;
-        road.style.setProperty("--road-length", `${length}px`);
-        road.style.setProperty("--road-angle", `${angle}deg`);
-      });
-    }
-
-    function lineFor(pin) {
-      return savedLines[pin.dataset.place] || pin.dataset.poem;
-    }
-
-    function setStatus(message) {
-      status.textContent = message;
-      window.clearTimeout(setStatus.timer);
-      setStatus.timer = window.setTimeout(() => {
-        status.textContent = "";
-      }, 2600);
-    }
-
-    function selectPlace(pin) {
-      currentPin = pin;
-      pins.forEach((item) => item.classList.toggle("is-active", item === pin));
-      roads.forEach((road) => road.classList.toggle("is-active", road.dataset.roadFor === pin.dataset.place));
-      const line = lineFor(pin);
-      placeName.textContent = pin.dataset.place;
-      placeMode.textContent = pin.dataset.place === "Radnorshire" ? "Sightline / thought-memory" : "Road travelled";
-      poemText.textContent = line;
-      thread.textContent = pin.dataset.thread;
-      edit.value = line;
-    }
-
-    function gatherLines() {
-      const text = pins.map((pin) => `${pin.dataset.place}: ${lineFor(pin)}`).join("\n");
-      placeName.textContent = "Six Roads In";
-      placeMode.textContent = "Road memory";
-      poemText.textContent = "All six roads arrive at once.";
-      thread.textContent = text;
-      edit.value = text;
-      pins.forEach((pin) => pin.classList.remove("is-active"));
-      roads.forEach((road) => road.classList.remove("is-active"));
-      currentPin = null;
-    }
-
-    pins.forEach((pin) => {
-      pin.addEventListener("click", () => selectPlace(pin));
-    });
-
-    roads.forEach((road) => {
-      road.addEventListener("click", () => {
-        const pin = pins.find((item) => item.dataset.place === road.dataset.roadFor);
-        if (pin) selectPlace(pin);
-      });
-    });
-
-    document.querySelector("[data-action='save']").addEventListener("click", () => {
-      if (!currentPin) {
-        setStatus("Choose a single road first.");
-        return;
-      }
-      savedLines[currentPin.dataset.place] = edit.value.trim() || currentPin.dataset.poem;
-      localStorage.setItem(storageKey, JSON.stringify(savedLines));
-      selectPlace(currentPin);
-      setStatus("Saved in this browser.");
-    });
-
-    document.querySelector("[data-action='restore']").addEventListener("click", () => {
-      if (!currentPin) {
-        setStatus("Choose a single road first.");
-        return;
-      }
-      delete savedLines[currentPin.dataset.place];
-      localStorage.setItem(storageKey, JSON.stringify(savedLines));
-      selectPlace(currentPin);
-      setStatus("Original line restored.");
-    });
-
-    document.querySelector("[data-action='gather']").addEventListener("click", gatherLines);
-    placeGeoPins();
-    window.addEventListener("resize", placeGeoPins);
-  </script>
-  <script src="script.js"></script>
-</body>
-</html>
