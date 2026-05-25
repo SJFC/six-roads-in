@@ -1,91 +1,150 @@
-<!doctype html>
-<!--
-  Six Roads In
-  Poem, concept, original CodePen experiment, and artistic direction by Sarah Jane Crowson.
-  This iteration was developed in collaboration with OpenAI Codex, used as a creative coding assistant.
--->
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Six Roads In</title>
-  <style>
-    :root {
-      color-scheme: light;
-      --ink: #ece0c5;
-      --muted: #a99673;
-      --paper: #efe3c7;
-      --field: #151820;
-      --clay: #d58b62;
-      --water: #9db6bf;
-      --chalk: #fff7d9;
-      --night: #151820;
-      --night-deep: #080a10;
-      --shadow: 0 24px 70px rgba(5, 7, 12, 0.34);
-      --radius: 8px;
+    function pick(list) {
+      return list[Math.floor(Math.random() * list.length)];
     }
-    * {
-      box-sizing: border-box;
+    function generatedSixRoadsLine(place) {
+      const bank = sixRoadsWordBanks[sixRoadsKey(place)] || sixRoadsWordBanks.hereford;
+      const line = `${pick(bank.subjects)} ${pick(bank.verbs)} ${pick(bank.objects)} ${pick(bank.endings)}`;
+      return line.replace(/\s+/g, " ").trim() + ".";
     }
-    html,
-    body {
-      min-height: 100%;
+    function generatedSixRoadsConstellation(places) {
+      return places.map((place) => `${place}: ${generatedSixRoadsLine(place)}`).join("\n");
     }
-    body {
-      margin: 0;
-      font-family: ui-serif, Georgia, "Times New Roman", serif;
-      color: #211f1a;
-      background:
-        linear-gradient(135deg, rgba(213, 139, 98, 0.18), transparent 34%),
-        linear-gradient(315deg, rgba(41, 49, 66, 0.24), transparent 44%),
-        #e8dcc0;
+    const pins = Array.from(document.querySelectorAll(".pin"));
+    const roads = Array.from(document.querySelectorAll(".road"));
+    const placeName = document.querySelector(".place-name");
+    const placeMode = document.querySelector(".place-mode");
+    const poemText = document.querySelector(".poem-text");
+    const thread = document.querySelector(".thread");
+    const edit = document.querySelector("#poem-edit");
+    const status = document.querySelector(".status");
+    const storageKey = "six-roads-in-lines";
+    const mapField = document.querySelector(".map-field");
+    const mapBounds = {
+      minLat: 52.02,
+      maxLat: 52.215,
+      minLon: -3.12,
+      maxLon: -2.53
+    };
+    let currentPin = null;
+    const savedLines = JSON.parse(localStorage.getItem(storageKey) || "{}");
+    function cssPercent(name) {
+      const value = window.getComputedStyle(mapField).getPropertyValue(name);
+      return Number.parseFloat(value) / 100;
     }
-    button,
-    textarea {
-      font: inherit;
+    function projectedPoint(pin) {
+      const leftPad = cssPercent("--map-left");
+      const rightPad = cssPercent("--map-right");
+      const topPad = cssPercent("--map-top");
+      const bottomPad = cssPercent("--map-bottom");
+      const lat = Number.parseFloat(pin.dataset.lat);
+      const lon = Number.parseFloat(pin.dataset.lon);
+      const xRange = 1 - leftPad - rightPad;
+      const yRange = 1 - topPad - bottomPad;
+      const x = leftPad + ((lon - mapBounds.minLon) / (mapBounds.maxLon - mapBounds.minLon)) * xRange;
+      const y = topPad + ((mapBounds.maxLat - lat) / (mapBounds.maxLat - mapBounds.minLat)) * yRange;
+      return { x, y };
     }
-    .poem-map {
-      min-height: 100vh;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(310px, 430px);
-      overflow: hidden;
+    function placeGeoPins() {
+      const field = mapField.getBoundingClientRect();
+      const hereford = pins.find((pin) => pin.dataset.place === "Hereford");
+      const herefordPoint = projectedPoint(hereford);
+      pins.forEach((pin) => {
+        const point = projectedPoint(pin);
+        pin.style.left = `${point.x * 100}%`;
+        pin.style.top = `${point.y * 100}%`;
+      });
+      roads.forEach((road) => {
+        const target = pins.find((pin) => pin.dataset.place === road.dataset.roadFor);
+        if (!target) return;
+        const targetPoint = projectedPoint(target);
+        const startX = herefordPoint.x * field.width;
+        const startY = herefordPoint.y * field.height;
+        const endX = targetPoint.x * field.width;
+        const endY = targetPoint.y * field.height;
+        const dx = endX - startX;
+        const dy = endY - startY;
+        const fullLength = Math.hypot(dx, dy);
+        const memoryOffset = road.classList.contains("memory-road") ? 30 : 0;
+        const lineStartX = startX + (dx / fullLength) * memoryOffset;
+        const lineStartY = startY + (dy / fullLength) * memoryOffset;
+        const length = Math.max(fullLength - memoryOffset, 1);
+        const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+        road.style.left = `${(lineStartX / field.width) * 100}%`;
+        road.style.top = `${(lineStartY / field.height) * 100}%`;
+        road.style.setProperty("--road-length", `${length}px`);
+        road.style.setProperty("--road-angle", `${angle}deg`);
+      });
     }
-    .map-field {
-      position: relative;
-      min-height: 100vh;
-      --map-left: 6%;
-      --map-right: 5%;
-      --map-top: 28%;
-      --map-bottom: 14%;
-      isolation: isolate;
-      background:
-        radial-gradient(circle at 11% 44%, rgba(255, 247, 217, 0.9) 0 2px, transparent 2.8px),
-        radial-gradient(circle at 27% 21%, rgba(255, 247, 217, 0.78) 0 1.5px, transparent 2.3px),
-        radial-gradient(circle at 37% 62%, rgba(255, 247, 217, 0.62) 0 1px, transparent 1.8px),
-        radial-gradient(circle at 69% 18%, rgba(255, 247, 217, 0.68) 0 1.4px, transparent 2.2px),
-        radial-gradient(circle at 83% 46%, rgba(255, 247, 217, 0.62) 0 1.2px, transparent 2px),
-        radial-gradient(circle at 91% 74%, rgba(255, 247, 217, 0.54) 0 1px, transparent 1.8px),
-        radial-gradient(circle at 48% 42%, rgba(213, 139, 98, 0.16), transparent 24%),
-        linear-gradient(145deg, #202531 0%, #11151e 46%, #070910 100%);
+    function lineFor(pin) {
+      return pin.dataset.poem;
     }
-    .map-field::before,
-    .map-field::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
+    function draftFor(pin) {
+      return savedLines[pin.dataset.place] || pin.dataset.poem;
     }
-    .map-field::before {
-      background:
-        radial-gradient(circle at 36% 54%, transparent 0 15%, rgba(236, 224, 197, 0.16) 15.2% 15.45%, transparent 15.7%),
-        radial-gradient(circle at 36% 54%, transparent 0 31%, rgba(236, 224, 197, 0.1) 31.2% 31.38%, transparent 31.6%),
-        radial-gradient(circle at 36% 54%, transparent 0 47%, rgba(236, 224, 197, 0.08) 47.2% 47.36%, transparent 47.6%),
-        linear-gradient(25deg, transparent 0 52%, rgba(236, 224, 197, 0.1) 52.1% 52.25%, transparent 52.45%),
-        linear-gradient(115deg, transparent 0 45%, rgba(236, 224, 197, 0.09) 45.1% 45.25%, transparent 45.45%);
-      mix-blend-mode: screen;
+    function setStatus(message) {
+      status.textContent = message;
+      window.clearTimeout(setStatus.timer);
+      setStatus.timer = window.setTimeout(() => {
+        status.textContent = "";
+      }, 2600);
     }
-    .map-field::after {
-      background-image:
-        repeating-linear-gradient(90deg, transparent 0 71px, rgba(236, 224, 197, 0.07) 72px 73px),
-        repeating-linear-gradient(0deg, transparent 0 71px, rgba(236, 224, 197, 0.055) 72px 73px);
+    function selectPlace(pin) {
+      currentPin = pin;
+      pins.forEach((item) => item.classList.toggle("is-active", item === pin));
+      roads.forEach((road) => road.classList.toggle("is-active", road.dataset.roadFor === pin.dataset.place));
+      const line = lineFor(pin);
+      placeName.textContent = pin.dataset.place;
+      placeMode.textContent = pin.dataset.place === "Radnorshire" ? "Sightline / thought-memory" : "Road travelled";
+      poemText.textContent = line;
+      thread.textContent = pin.dataset.thread;
+      edit.value = draftFor(pin);
+    }
+    function generateForPlace(pin) {
+      return generatedSixRoadsLine(pin.dataset.place);
+    }
+    function gatherLines() {
+      if (currentPin) {
+        const line = generateForPlace(currentPin);
+        edit.value = line;
+        setStatus("A fresh draft gathered in the text box.");
+        return;
+      }
+      const places = pins.map((pin) => pin.dataset.place);
+      const text = generatedSixRoadsConstellation(places);
+      edit.value = text;
+      setStatus("A found constellation gathered in the text box.");
+    }
+    pins.forEach((pin) => {
+      pin.addEventListener("click", () => selectPlace(pin));
+    });
+    roads.forEach((road) => {
+      road.addEventListener("click", () => {
+        const pin = pins.find((item) => item.dataset.place === road.dataset.roadFor);
+        if (pin) selectPlace(pin);
+      });
+    });
+    document.querySelector("[data-action='save']").addEventListener("click", () => {
+      if (!currentPin) {
+        setStatus("Choose a single road first.");
+        return;
+      }
+      savedLines[currentPin.dataset.place] = edit.value.trim() || currentPin.dataset.poem;
+      localStorage.setItem(storageKey, JSON.stringify(savedLines));
+      setStatus("Draft saved in this browser.");
+    });
+    document.querySelector("[data-action='restore']").addEventListener("click", () => {
+      if (!currentPin) {
+        setStatus("Choose a single road first.");
+        return;
+      }
+      delete savedLines[currentPin.dataset.place];
+      localStorage.setItem(storageKey, JSON.stringify(savedLines));
+      selectPlace(currentPin);
+      setStatus("Original line restored.");
+    });
+    document.querySelector("[data-action='gather']").addEventListener("click", gatherLines);
+    placeGeoPins();
+    window.addEventListener("resize", placeGeoPins);
+  </script>
+</body>
+</html>
