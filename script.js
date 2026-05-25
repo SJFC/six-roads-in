@@ -1,48 +1,66 @@
-const wordBanks = {
-  hereford: {
-    verbs: ["keeps", "steals", "cups", "turns"],
-    nouns: ["time", "light", "the city", "the palm of hills"],
-    endings: ["under the heat", "at the centre of the map", "in its old hand"]
+const sixRoadsWordBanks = {
+  dormington: {
+    subjects: ["crow", "the fingerpost", "a black wing", "the road-sign", "morning"],
+    verbs: ["points", "turns", "misdirects", "breaks open", "leans"],
+    objects: ["the journey", "six possible roads", "a choice of weather", "the bright verge", "a field of distances"],
+    endings: ["before work begins", "under a hot white sky", "at the edge of the parish", "where the lane hesitates"]
   },
 
   mordiford: {
-    verbs: ["sleeps", "curls", "guards", "dreams"],
-    nouns: ["the dragon", "the tail", "the road", "the shell"],
-    endings: ["beneath the village", "like a snail shell", "under the road"]
+    subjects: ["the dragon", "Mordiford", "the river", "a curled tail", "legend"],
+    verbs: ["sleeps", "keeps", "guards", "dreams", "folds"],
+    objects: ["the road", "the old heat", "a snail-shell silence", "orchard light", "the village under its tongue"],
+    endings: ["beside the Wye", "under green shade", "while the car passes", "inside a summer hush"]
+  },
+
+  tarrington: {
+    subjects: ["a pheasant", "the vast car", "the lady with vole-eyes", "the lane", "Tarrington"],
+    verbs: ["flashes", "strikes", "startles", "vanishes", "throws"],
+    objects: ["a hard little omen", "feathers into sunlight", "death across the tarmac", "a theatre of heat", "the body of the road"],
+    endings: ["too quickly to name", "in the glare", "between hedge and engine", "where looking becomes witness"]
+  },
+
+  hereford: {
+    subjects: ["Hereford", "the light-fingered city", "time", "the cathedral air", "the palm of hills"],
+    verbs: ["steals", "cups", "keeps", "turns", "counts"],
+    objects: ["light", "old minutes", "the hot centre", "a small bell of distance", "the road back out"],
+    endings: ["in its stone hand", "under the heat", "where all roads briefly agree", "before the map opens again"]
   },
 
   lugwardine: {
-    verbs: ["lifts", "carries", "summons", "darkens"],
-    nouns: ["rain", "Wales", "the small hill", "the road"],
-    endings: ["over the brow of the hill", "from the west", "into strangeness"]
+    subjects: ["Lugwardine", "the small hill", "rain", "the brow of the road", "the west"],
+    verbs: ["lifts", "summons", "darkens", "carries", "unfolds"],
+    objects: ["Wales", "strangeness", "a wet horizon", "weather from memory", "the first thought of distance"],
+    endings: ["over the brow", "from the west", "before the office day", "where the familiar road tilts"]
   },
 
   radnorshire: {
-    verbs: ["rises", "freezes", "waits", "withdraws"],
-    nouns: ["the ridge", "the frost", "the distance", "the high ground"],
-    endings: ["beyond the city", "higher than spires", "in hard weather"]
+    subjects: ["Radnorshire", "Hergest ridge", "the seen hill", "frost", "the far high ground"],
+    verbs: ["rises", "waits", "glimmers", "withdraws", "holds"],
+    objects: ["thought-memory", "hard weather", "a white line of distance", "the journey without being travelled", "the horizon still speaking"],
+    endings: ["beyond the city", "higher than spires", "in the mind's weather", "where seeing becomes return"]
   }
 };
 
-let currentPlace = "hereford";
+function sixRoadsKey(place) {
+  return String(place || "").toLowerCase().replace(/[^a-z]/g, "");
+}
 
 function pick(list) {
   return list[Math.floor(Math.random() * list.length)];
 }
 
-function gatherLine() {
-  const bank = wordBanks[currentPlace];
-
-  if (!bank) return "The road gathers itself into weather.";
-
-  return `${pick(bank.verbs)} ${pick(bank.nouns)} ${pick(bank.endings)}.`;
+function generatedSixRoadsLine(place) {
+  const bank = sixRoadsWordBanks[sixRoadsKey(place)] || sixRoadsWordBanks.hereford;
+  const line = `${pick(bank.subjects)} ${pick(bank.verbs)} ${pick(bank.objects)} ${pick(bank.endings)}`;
+  return line.replace(/\s+/g, " ").trim() + ".";
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  const gatherButton = document.querySelector("#gather");
-  const currentLine = document.querySelector("#current-line");
+function generatedSixRoadsConstellation(places) {
+  return places.map((place) => `${place}: ${generatedSixRoadsLine(place)}`).join("\n");
+}
 
-  gatherButton.addEventListener("click", () => {
-    currentLine.textContent = gatherLine();
-  });
-});
+window.SixRoadsGenerator = {
+  line: generatedSixRoadsLine,
+  constellation: generatedSixRoadsConstellation
+};
