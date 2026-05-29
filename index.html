@@ -1,3 +1,803 @@
+<!doctype html>
+<!--
+  Six Roads In
+  Poem, concept, original CodePen experiment, and artistic direction by Sarah Jane Crowson.
+  This iteration was developed in collaboration with OpenAI Codex, used as a creative coding assistant.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Six Roads In</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #f3fbff;
+      --muted: #c8d7db;
+      --paper: #111923;
+      --field: #151820;
+      --clay: #c9a8ff;
+      --water: #a9e7ff;
+      --chalk: #f8fcff;
+      --night: #151820;
+      --night-deep: #080a10;
+      --shadow: 0 24px 70px rgba(5, 7, 12, 0.34);
+      --radius: 8px;
+      --label-font: Optima, "Gill Sans", "Avenir Next", "Trebuchet MS", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+    }
+
+    body {
+      margin: 0;
+      font-family: ui-serif, Georgia, "Times New Roman", serif;
+      color: var(--chalk);
+      background:
+        linear-gradient(135deg, rgba(137, 212, 239, 0.12), transparent 34%),
+        linear-gradient(315deg, rgba(169, 231, 255, 0.1), transparent 44%),
+        #080a10;
+    }
+
+    button,
+    textarea {
+      font: inherit;
+    }
+
+    .poem-map {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(310px, 430px);
+      overflow: hidden;
+    }
+
+    .map-field {
+      position: relative;
+      min-height: 100vh;
+      --map-left: 6%;
+      --map-right: 5%;
+      --map-top: 28%;
+      --map-bottom: 14%;
+      isolation: isolate;
+      background:
+        linear-gradient(90deg, rgba(7, 9, 16, 0.28), rgba(7, 9, 16, 0.05) 48%, rgba(7, 9, 16, 0.2)),
+        linear-gradient(180deg, rgba(7, 9, 16, 0.16), rgba(7, 9, 16, 0.12) 42%, rgba(7, 9, 16, 0.54)),
+        url("background-six-roads-in.jpeg") center top / cover no-repeat,
+        linear-gradient(145deg, #202531 0%, #11151e 46%, #070910 100%);
+    }
+
+    .map-field::before,
+    .map-field::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .map-field::before {
+      background:
+        radial-gradient(circle at 48% 38%, rgba(248, 252, 255, 0.08), transparent 25%),
+        linear-gradient(90deg, rgba(7, 9, 16, 0.34), transparent 28%, transparent 72%, rgba(7, 9, 16, 0.28));
+      mix-blend-mode: normal;
+    }
+
+    .map-field::after {
+      background-image:
+        repeating-linear-gradient(90deg, transparent 0 71px, rgba(236, 224, 197, 0.035) 72px 73px),
+        repeating-linear-gradient(0deg, transparent 0 71px, rgba(236, 224, 197, 0.028) 72px 73px);
+      opacity: 0.46;
+      mask-image: linear-gradient(to right, #000 0%, transparent 84%);
+    }
+
+    .map-field.is-crystal-lit::before {
+      background:
+        radial-gradient(circle at 50% 50%, rgba(201, 168, 255, 0.3), rgba(169, 231, 255, 0.12) 16%, transparent 34%),
+        radial-gradient(circle at 50% 28%, rgba(248, 252, 255, 0.12), transparent 32%),
+        linear-gradient(90deg, rgba(7, 9, 16, 0.22), transparent 28%, transparent 72%, rgba(7, 9, 16, 0.24));
+    }
+
+    .crystal-button {
+      position: absolute;
+      z-index: 3;
+      left: 50%;
+      top: 51%;
+      width: clamp(70px, 8vw, 118px);
+      aspect-ratio: 0.72;
+      border: 0;
+      border-radius: 50%;
+      padding: 0;
+      color: #d8c5ff;
+      background:
+        radial-gradient(ellipse at 50% 42%, rgba(248, 252, 255, 0.3), rgba(201, 168, 255, 0.18) 28%, rgba(63, 34, 99, 0.08) 52%, transparent 72%);
+      cursor: pointer;
+      opacity: 0.84;
+      transform: translate(-50%, -50%);
+      filter: blur(0.2px);
+      mix-blend-mode: screen;
+      transition: filter 240ms ease, opacity 240ms ease, transform 240ms ease;
+    }
+
+    .crystal-button::before,
+    .crystal-button::after {
+      content: "";
+      position: absolute;
+      inset: 12%;
+      border-radius: 50%;
+      background: radial-gradient(ellipse, rgba(201, 168, 255, 0.28), rgba(169, 231, 255, 0.12) 36%, transparent 68%);
+      filter: blur(10px);
+      opacity: 0.72;
+      animation: crystal-breathe 4.8s ease-in-out infinite;
+    }
+
+    .crystal-button::after {
+      inset: 24%;
+      background: radial-gradient(ellipse, rgba(248, 252, 255, 0.42), rgba(201, 168, 255, 0.22) 38%, transparent 72%);
+      animation-delay: -2.2s;
+    }
+
+    .crystal-button:hover,
+    .crystal-button:focus-visible,
+    .map-field.is-crystal-lit .crystal-button {
+      opacity: 1;
+      filter: blur(0) brightness(1.18);
+      transform: translate(-50%, -50%) scale(1.06);
+    }
+
+    .crystal-button span {
+      position: absolute;
+      inset: 35% 36%;
+      border-radius: 50%;
+      background: rgba(248, 252, 255, 0.28);
+      box-shadow:
+        0 0 20px rgba(248, 252, 255, 0.42),
+        0 0 44px rgba(201, 168, 255, 0.5);
+    }
+
+    .sky-words {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .sky-word {
+      position: absolute;
+      left: var(--x);
+      top: var(--y);
+      color: rgba(240, 250, 255, 0.78);
+      font-family: var(--font);
+      font-size: var(--size);
+      letter-spacing: 0.14em;
+      text-shadow:
+        0 0 8px rgba(248, 252, 255, 0.42),
+        0 0 20px rgba(169, 231, 255, 0.25);
+      opacity: 0;
+      transform: translate(-50%, -50%) translateY(8px);
+      animation: sky-word-drift 6.8s ease forwards;
+      animation-delay: var(--delay);
+    }
+
+    @keyframes crystal-breathe {
+      0%,
+      100% {
+        opacity: 0.38;
+        transform: scale(0.86);
+      }
+      50% {
+        opacity: 0.92;
+        transform: scale(1.12);
+      }
+    }
+
+    @keyframes sky-word-drift {
+      0% {
+        opacity: 0;
+        filter: blur(5px);
+        transform: translate(-50%, -50%) translateY(12px);
+      }
+      18%,
+      72% {
+        opacity: 0.86;
+        filter: blur(0);
+      }
+      100% {
+        opacity: 0;
+        filter: blur(7px);
+        transform: translate(-50%, -50%) translateY(-14px);
+      }
+    }
+
+    .title-block {
+      position: absolute;
+      top: clamp(24px, 5vw, 58px);
+      left: clamp(22px, 5vw, 72px);
+      z-index: 2;
+      max-width: min(620px, calc(100% - 44px));
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 11ch;
+      font-size: clamp(3.5rem, 9.5vw, 8rem);
+      line-height: 0.9;
+      letter-spacing: 0;
+      font-weight: 500;
+      color: var(--ink);
+      text-shadow: 0 2px 16px rgba(248, 252, 255, 0.14);
+    }
+
+    .weather-note {
+      max-width: 34ch;
+      margin: 24px 0 0;
+      color: rgba(236, 224, 197, 0.84);
+      font-family: var(--label-font);
+      font-size: clamp(0.9rem, 1.4vw, 1.05rem);
+      line-height: 1.5;
+    }
+
+    .road {
+      position: absolute;
+      z-index: 1;
+      width: var(--road-length, max(18vw, 180px));
+      height: 18px;
+      border: 0;
+      padding: 0;
+      background: transparent;
+      transform-origin: left center;
+      transform: rotate(var(--road-angle, 0deg));
+      cursor: pointer;
+    }
+
+    .road::before {
+      content: "";
+      position: absolute;
+      inset: 8px 0;
+      height: 2px;
+      border: 0;
+      background: linear-gradient(90deg, rgba(7, 9, 16, 0.2), rgba(248, 252, 255, 0.88), rgba(7, 9, 16, 0.18));
+      box-shadow:
+        0 0 0 1px rgba(7, 9, 16, 0.35),
+        0 0 14px rgba(248, 252, 255, 0.38);
+      opacity: 0;
+      transition: transform 180ms ease, background 180ms ease, box-shadow 180ms ease;
+    }
+
+    .road.is-active::before,
+    .road:hover::before {
+      background: linear-gradient(90deg, rgba(116, 86, 168, 0.18), rgba(201, 168, 255, 0.86), rgba(116, 86, 168, 0.18));
+      box-shadow: 0 0 18px rgba(201, 168, 255, 0.32);
+      opacity: 0;
+      transform: scaleX(1.04);
+    }
+
+    .memory-road::before {
+      inset: 6px 0;
+      border-top: 0;
+      border-bottom: 0;
+      background-image: radial-gradient(circle, rgba(157, 182, 191, 0.95) 0 1.5px, transparent 2px);
+      background-size: 13px 3px;
+      height: 3px;
+      opacity: 0;
+      box-shadow: 0 0 14px rgba(157, 182, 191, 0.32);
+    }
+
+    .memory-road.is-active::before,
+    .memory-road:hover::before {
+      background-image: radial-gradient(circle, rgba(201, 168, 255, 0.96) 0 1.7px, transparent 2.2px);
+    }
+
+    .pin {
+      position: absolute;
+      z-index: 3;
+      width: 42px;
+      height: 42px;
+      border: 0;
+      padding: 0;
+      color: #f8fcff;
+      background: transparent;
+      cursor: pointer;
+      transform: translate(-50%, -50%);
+    }
+
+    .pin-dot {
+      display: block;
+      position: relative;
+      width: 42px;
+      aspect-ratio: 1;
+      border: 0;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle, #ffffff 0 7%, rgba(242, 252, 255, 0.96) 8% 13%, rgba(169, 231, 255, 0.5) 14% 24%, rgba(201, 168, 255, 0.2) 25% 42%, transparent 68%);
+      box-shadow:
+        0 0 10px rgba(248, 252, 255, 0.62),
+        0 0 24px rgba(169, 231, 255, 0.32),
+        0 0 44px rgba(201, 168, 255, 0.22);
+      filter: blur(0.15px);
+      transform: scale(0.92);
+      transition: filter 220ms ease, box-shadow 220ms ease, transform 220ms ease;
+    }
+
+    .pin-dot::before {
+      content: "";
+      position: absolute;
+      inset: 50% auto auto 50%;
+      width: 58px;
+      height: 10px;
+      background: radial-gradient(ellipse, rgba(248, 252, 255, 0.78) 0 9%, rgba(169, 231, 255, 0.38) 10% 28%, transparent 70%);
+      filter: blur(2.6px);
+      opacity: 0.8;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    .pin-dot::after {
+      content: "";
+      position: absolute;
+      inset: 50% auto auto 50%;
+      width: 10px;
+      height: 58px;
+      background: radial-gradient(ellipse, rgba(248, 252, 255, 0.72) 0 9%, rgba(201, 168, 255, 0.34) 10% 28%, transparent 70%);
+      filter: blur(2.6px);
+      opacity: 0.74;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    .pin::before {
+      content: "";
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(201, 168, 255, 0.2) 0 14%, rgba(169, 231, 255, 0.1) 15% 36%, transparent 70%);
+      filter: blur(5px);
+      opacity: 0.55;
+      pointer-events: none;
+    }
+
+    .pin-label {
+      position: absolute;
+      top: 50%;
+      left: 28px;
+      transform: translateY(-50%);
+      max-width: 16ch;
+      color: rgba(235, 249, 255, 0.9);
+      font-family: var(--label-font);
+      font-size: 0.78rem;
+      line-height: 1.1;
+      text-align: left;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      text-shadow: 0 0 10px rgba(248, 252, 255, 0.24);
+      transition: opacity 160ms ease;
+      white-space: nowrap;
+    }
+
+    .pin[data-label="left"] .pin-label {
+      right: 28px;
+      left: auto;
+      text-align: right;
+    }
+
+    .pin[data-label="above"] .pin-label {
+      top: auto;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+    }
+
+    .pin[data-label="below"] .pin-label {
+      top: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+    }
+
+    .pin.is-active .pin-dot,
+    .pin:hover .pin-dot {
+      box-shadow:
+        0 0 14px rgba(248, 252, 255, 0.88),
+        0 0 34px rgba(169, 231, 255, 0.48),
+        0 0 62px rgba(201, 168, 255, 0.5);
+      filter: blur(0);
+      transform: scale(1.16);
+    }
+
+    .pin.is-active::before,
+    .pin:hover::before {
+      opacity: 0.9;
+      filter: blur(7px);
+    }
+
+    .distance:focus-visible {
+      outline-offset: 8px;
+    }
+
+    .pin:focus-visible,
+    .tool-button:focus-visible,
+    textarea:focus-visible {
+      outline: 3px solid rgba(86, 127, 146, 0.85);
+      outline-offset: 4px;
+    }
+
+    .poem-panel {
+      position: relative;
+      z-index: 4;
+      min-height: 100vh;
+      max-height: 100vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 28px;
+      padding: clamp(22px, 4vw, 48px);
+      background:
+        linear-gradient(180deg, rgba(18, 29, 42, 0.9), rgba(7, 10, 17, 0.94)),
+        var(--night-deep);
+      border-left: 1px solid rgba(137, 212, 239, 0.22);
+      box-shadow:
+        -18px 0 54px rgba(0, 0, 0, 0.28),
+        inset 1px 0 0 rgba(248, 252, 255, 0.09);
+      backdrop-filter: blur(16px) saturate(1.12);
+    }
+
+    .place-name {
+      margin: 0;
+      color: var(--clay);
+      font-family: var(--label-font);
+      font-size: 0.9rem;
+      line-height: 1.2;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+    }
+
+    .place-mode {
+      margin: 8px 0 0;
+      color: var(--water);
+      font-family: var(--label-font);
+      font-size: 0.74rem;
+      line-height: 1.2;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+    }
+
+    .poem-text {
+      margin: 18px 0 0;
+      font-size: clamp(1.8rem, 3.4vw, 3.25rem);
+      line-height: 1.04;
+      letter-spacing: 0;
+      color: var(--chalk);
+      text-shadow: 0 0 18px rgba(248, 252, 255, 0.14);
+    }
+
+    .thread {
+      margin: 24px 0 0;
+      color: rgba(215, 229, 229, 0.74);
+      font-family: var(--label-font);
+      font-size: 0.95rem;
+      line-height: 1.55;
+      white-space: pre-line;
+    }
+
+    .editor {
+      display: grid;
+      gap: 12px;
+    }
+
+    .editor label {
+      color: rgba(137, 212, 239, 0.88);
+      font-family: var(--label-font);
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 126px;
+      resize: vertical;
+      border: 1px solid rgba(137, 212, 239, 0.24);
+      border-radius: var(--radius);
+      padding: 14px;
+      color: #f5fbff;
+      background: rgba(4, 8, 14, 0.48);
+      line-height: 1.45;
+      box-shadow:
+        inset 0 0 0 1px rgba(248, 252, 255, 0.06),
+        0 10px 28px rgba(0, 0, 0, 0.18);
+    }
+
+    .tool-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tool-button {
+      min-height: 40px;
+      border: 1px solid rgba(137, 212, 239, 0.26);
+      border-radius: var(--radius);
+      padding: 0 13px;
+      color: #f1fbff;
+      background: rgba(8, 14, 23, 0.62);
+      font-family: var(--label-font);
+      font-size: 0.84rem;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+    }
+
+    .tool-button:hover {
+      border-color: rgba(248, 252, 255, 0.5);
+      background: rgba(24, 43, 58, 0.78);
+    }
+
+    .tool-button.primary {
+      border-color: rgba(201, 168, 255, 0.68);
+      color: #f8fcff;
+      background: linear-gradient(180deg, rgba(88, 54, 128, 0.94), rgba(45, 27, 72, 0.96));
+      box-shadow: 0 0 18px rgba(201, 168, 255, 0.2);
+    }
+
+    .status {
+      min-height: 1.3em;
+      margin: 0;
+      color: rgba(215, 229, 229, 0.72);
+      font-family: var(--label-font);
+      font-size: 0.84rem;
+      line-height: 1.4;
+    }
+
+    .heat {
+      animation: heat-shimmer 9s ease-in-out infinite alternate;
+    }
+
+    @keyframes heat-shimmer {
+      from {
+        filter: saturate(1) contrast(1);
+      }
+      to {
+        filter: saturate(1.15) contrast(1.04);
+      }
+    }
+
+    @media (max-width: 860px) {
+      .poem-map {
+        grid-template-columns: 1fr;
+      }
+
+      .map-field {
+        min-height: 62vh;
+        --map-left: 7%;
+        --map-right: 7%;
+        --map-top: 40%;
+        --map-bottom: 12%;
+      }
+
+      .poem-panel {
+        min-height: auto;
+        border-left: 0;
+        border-top: 1px solid rgba(137, 212, 239, 0.22);
+      }
+
+      .pin-label {
+        max-width: 12ch;
+        padding: 3px 5px;
+        overflow: hidden;
+        background: rgba(7, 10, 17, 0.72);
+        font-size: 0.66rem;
+        opacity: 0;
+        pointer-events: none;
+        text-overflow: ellipsis;
+      }
+
+      .distance .pin-label {
+        display: none;
+      }
+
+
+      .road {
+        width: max(24vw, 118px);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="poem-map heat" aria-labelledby="title">
+    <section class="map-field" aria-label="Six roads map">
+      <div class="title-block">
+        <h1 id="title">Six Roads In</h1>
+      </div>
+
+      <button class="crystal-button" type="button" aria-label="Illuminate the amethyst">
+        <span></span>
+      </button>
+      <div class="sky-words" aria-hidden="true"></div>
+
+      <button class="road road-one" type="button" data-road-for="Mordiford" aria-label="Road to Mordiford"></button>
+      <button class="road road-three" type="button" data-road-for="Dormington" aria-label="Road to Dormington"></button>
+      <button class="road road-four" type="button" data-road-for="Lugwardine" aria-label="Road to Lugwardine"></button>
+      <button class="road road-five" type="button" data-road-for="Hereford" aria-label="Road to Hereford"></button>
+      <button class="road road-six memory-road" type="button" data-road-for="Radnorshire" aria-label="Sight line to Radnorshire"></button>
+
+      <button class="pin dormington" type="button"
+        data-place="Dormington"
+        data-lat="52.0573"
+        data-lon="-2.61262"
+        data-label="below"
+        data-poem="crow lands on a fingerpost, points to different directions of travel"
+        data-thread="a small omen at the edge of the road; choice made visible, then gone">
+        <span class="pin-dot"></span>
+        <span class="pin-label">Dormington</span>
+      </button>
+
+      <button class="pin mordiford" type="button"
+        data-place="Mordiford"
+        data-lat="52.0338"
+        data-lon="-2.6283"
+        data-label="below"
+        data-poem="and all the while, the Mordiford dragon sleeps, tail curled like a snail shell"
+        data-thread="legend folded into lane, river, orchard, a green hush under the tongue">
+        <span class="pin-dot"></span>
+        <span class="pin-label">Mordiford</span>
+      </button>
+
+      <button class="pin hereford" type="button"
+        data-place="Hereford"
+        data-lat="52.05684"
+        data-lon="-2.71482"
+        data-label="left"
+        data-poem="Hereford, light fingered city stealing time in a palm of hills"
+        data-thread="bells loosen in the heat; the old stones keep their own weather">
+        <span class="pin-dot"></span>
+        <span class="pin-label">Hereford</span>
+      </button>
+
+      <button class="pin lugwardine" type="button"
+        data-place="Lugwardine"
+        data-lat="52.0667"
+        data-lon="-2.66344"
+        data-label="above"
+        data-poem="over the brow of the small hill at Lugwardine, the strangeness of Wales rises from rain"
+        data-thread="weather becomes border, border becomes atmosphere, atmosphere becomes thought">
+        <span class="pin-dot"></span>
+        <span class="pin-label">Lugwardine</span>
+      </button>
+
+      <button class="pin distance" type="button"
+        aria-label="Radnorshire / Hergest Ridge"
+        data-place="Radnorshire"
+        data-lat="52.19938"
+        data-lon="-3.09067"
+        data-label="right"
+        data-poem="Radnorshire, higher than spires or cities. Hergest ridge caught fast in a hard frost"
+        data-thread="not the road travelled, but the hill seen from it; thought-memory held on the horizon">
+        <span class="pin-dot"></span>
+        <span class="pin-label">Radnorshire</span>
+      </button>
+    </section>
+
+    <section class="poem-panel" aria-live="polite">
+      <div>
+        <p class="place-name">Six Roads In</p>
+        <p class="place-mode">Road memory</p>
+        <p class="poem-text">Choose a place to begin.</p>
+        <p class="thread">An old experiment, reopened in the heat.</p>
+      </div>
+
+      <div class="editor" aria-label="Poem line editor">
+        <label for="poem-edit">Current line</label>
+        <textarea id="poem-edit" spellcheck="true">Choose a place to begin.</textarea>
+        <div class="tool-row">
+          <button class="tool-button primary" type="button" data-action="save">Save line</button>
+          <button class="tool-button" type="button" data-action="restore">Restore</button>
+         <button class="tool-button" id="gather" type="button" data-action="gather">Gather</button>
+        </div>
+        <p class="status" role="status"></p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const sixRoadsWordBanks = {
+      dormington: {
+        subjects: ["crow", "the fingerpost", "a black wing", "the road-sign", "morning"],
+        verbs: ["points", "turns", "misdirects", "breaks open", "leans"],
+        objects: ["the journey", "six possible roads", "a choice of weather", "the bright verge", "a field of distances"],
+        endings: ["before work begins", "under a hot white sky", "at the edge of the parish", "where the lane hesitates"]
+      },
+
+      mordiford: {
+        subjects: ["the dragon", "Mordiford", "the river", "a curled tail", "legend"],
+        verbs: ["sleeps", "keeps", "guards", "dreams", "folds"],
+        objects: ["the road", "the old heat", "a snail-shell silence", "orchard light", "the village under its tongue"],
+        endings: ["beside the Wye", "under green shade", "while the car passes", "inside a summer hush"]
+      },
+
+      hereford: {
+        subjects: ["Hereford", "the light-fingered city", "time", "the cathedral air", "the palm of hills"],
+        verbs: ["steals", "cups", "keeps", "turns", "counts"],
+        objects: ["light", "old minutes", "the hot centre", "a small bell of distance", "the road back out"],
+        endings: ["in its stone hand", "under the heat", "where all roads briefly agree", "before the map opens again"]
+      },
+
+      lugwardine: {
+        subjects: ["Lugwardine", "the small hill", "rain", "the brow of the road", "the west"],
+        verbs: ["lifts", "summons", "darkens", "carries", "unfolds"],
+        objects: ["Wales", "strangeness", "a wet horizon", "weather from memory", "the first thought of distance"],
+        endings: ["over the brow", "from the west", "before the office day", "where the familiar road tilts"]
+      },
+
+      radnorshire: {
+        subjects: ["Radnorshire", "Hergest ridge", "the seen hill", "frost", "the far high ground"],
+        verbs: ["rises", "waits", "glimmers", "withdraws", "holds"],
+        objects: ["thought-memory", "hard weather", "a white line of distance", "the journey without being travelled", "the horizon still speaking"],
+        endings: ["beyond the city", "higher than spires", "in the mind's weather", "where seeing becomes return"]
+      }
+    };
+
+    function sixRoadsKey(place) {
+      return String(place || "").toLowerCase().replace(/[^a-z]/g, "");
+    }
+
+    function pick(list) {
+      return list[Math.floor(Math.random() * list.length)];
+    }
+
+    function generatedSixRoadsLine(place) {
+      const bank = sixRoadsWordBanks[sixRoadsKey(place)] || sixRoadsWordBanks.hereford;
+      const line = `${pick(bank.subjects)} ${pick(bank.verbs)} ${pick(bank.objects)} ${pick(bank.endings)}`;
+      return line.replace(/\s+/g, " ").trim() + ".";
+    }
+
+    function generatedSixRoadsConstellation(places) {
+      return places.map((place) => `${place}: ${generatedSixRoadsLine(place)}`).join("\n");
+    }
+
+    const pins = Array.from(document.querySelectorAll(".pin"));
+    const roads = Array.from(document.querySelectorAll(".road"));
+    const placeName = document.querySelector(".place-name");
+    const placeMode = document.querySelector(".place-mode");
+    const poemText = document.querySelector(".poem-text");
+    const thread = document.querySelector(".thread");
+    const edit = document.querySelector("#poem-edit");
+    const status = document.querySelector(".status");
+    const crystalButton = document.querySelector(".crystal-button");
+    const skyWords = document.querySelector(".sky-words");
+    const storageKey = "six-roads-in-lines";
+    const mapField = document.querySelector(".map-field");
+    const crystalFragments = [
+      {
+        text: "the road travelled",
+        size: "clamp(0.8rem, 1.2vw, 1rem)",
+        font: "Optima, 'Gill Sans', 'Avenir Next', sans-serif"
+      },
+      {
+        text: "thought memory",
+        size: "clamp(1.25rem, 2vw, 1.75rem)",
+        font: "Georgia, 'Times New Roman', serif"
+      },
+      {
+        text: "sleeps",
+        size: "clamp(1.8rem, 3.2vw, 2.6rem)",
+        font: "'Courier New', Courier, monospace"
       }
     ];
     const crystalPositions = [
@@ -12,11 +812,14 @@
       maxLon: -2.53
     };
     let currentPin = null;
+
     const savedLines = JSON.parse(localStorage.getItem(storageKey) || "{}");
+
     function cssPercent(name) {
       const value = window.getComputedStyle(mapField).getPropertyValue(name);
       return Number.parseFloat(value) / 100;
     }
+
     function projectedPoint(pin) {
       const leftPad = cssPercent("--map-left");
       const rightPad = cssPercent("--map-right");
@@ -30,18 +833,22 @@
       const y = topPad + ((mapBounds.maxLat - lat) / (mapBounds.maxLat - mapBounds.minLat)) * yRange;
       return { x, y };
     }
+
     function placeGeoPins() {
       const field = mapField.getBoundingClientRect();
       const hereford = pins.find((pin) => pin.dataset.place === "Hereford");
       const herefordPoint = projectedPoint(hereford);
+
       pins.forEach((pin) => {
         const point = projectedPoint(pin);
         pin.style.left = `${point.x * 100}%`;
         pin.style.top = `${point.y * 100}%`;
       });
+
       roads.forEach((road) => {
         const target = pins.find((pin) => pin.dataset.place === road.dataset.roadFor);
         if (!target) return;
+
         const targetPoint = projectedPoint(target);
         const startX = herefordPoint.x * field.width;
         const startY = herefordPoint.y * field.height;
@@ -55,18 +862,22 @@
         const lineStartY = startY + (dy / fullLength) * memoryOffset;
         const length = Math.max(fullLength - memoryOffset, 1);
         const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+
         road.style.left = `${(lineStartX / field.width) * 100}%`;
         road.style.top = `${(lineStartY / field.height) * 100}%`;
         road.style.setProperty("--road-length", `${length}px`);
         road.style.setProperty("--road-angle", `${angle}deg`);
       });
     }
+
     function lineFor(pin) {
       return pin.dataset.poem;
     }
+
     function draftFor(pin) {
       return savedLines[pin.dataset.place] || pin.dataset.poem;
     }
+
     function setStatus(message) {
       status.textContent = message;
       window.clearTimeout(setStatus.timer);
@@ -74,6 +885,7 @@
         status.textContent = "";
       }, 2600);
     }
+
     function illuminateCrystal() {
       skyWords.innerHTML = "";
       mapField.classList.add("is-crystal-lit");
@@ -96,6 +908,7 @@
         skyWords.innerHTML = "";
       }, 7600);
     }
+
     function selectPlace(pin) {
       currentPin = pin;
       pins.forEach((item) => item.classList.toggle("is-active", item === pin));
@@ -107,9 +920,11 @@
       thread.textContent = pin.dataset.thread;
       edit.value = draftFor(pin);
     }
+
     function generateForPlace(pin) {
       return generatedSixRoadsLine(pin.dataset.place);
     }
+
     function gatherLines() {
       if (currentPin) {
         const line = generateForPlace(currentPin);
@@ -117,20 +932,24 @@
         setStatus("A fresh draft gathered in the text box.");
         return;
       }
+
       const places = pins.map((pin) => pin.dataset.place);
       const text = generatedSixRoadsConstellation(places);
       edit.value = text;
       setStatus("A found constellation gathered in the text box.");
     }
+
     pins.forEach((pin) => {
       pin.addEventListener("click", () => selectPlace(pin));
     });
+
     roads.forEach((road) => {
       road.addEventListener("click", () => {
         const pin = pins.find((item) => item.dataset.place === road.dataset.roadFor);
         if (pin) selectPlace(pin);
       });
     });
+
     document.querySelector("[data-action='save']").addEventListener("click", () => {
       if (!currentPin) {
         setStatus("Choose a single road first.");
@@ -140,6 +959,7 @@
       localStorage.setItem(storageKey, JSON.stringify(savedLines));
       setStatus("Draft saved in this browser.");
     });
+
     document.querySelector("[data-action='restore']").addEventListener("click", () => {
       if (!currentPin) {
         setStatus("Choose a single road first.");
@@ -150,6 +970,7 @@
       selectPlace(currentPin);
       setStatus("Original line restored.");
     });
+
     document.querySelector("[data-action='gather']").addEventListener("click", gatherLines);
     crystalButton.addEventListener("click", illuminateCrystal);
     placeGeoPins();
