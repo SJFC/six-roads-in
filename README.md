@@ -48,3 +48,5 @@ Coordinate references used in this iteration:
 The current version avoids external image links from the old CodePen, so it should work over HTTPS without mixed-content warnings.
 
 Text edits made inside the page are saved only in the current browser using local storage. They are useful for drafting, but the source poem lives in `index.html`.
+
+This iteration adds the custom star-map background, cooler moonlit palette, softer star-like place markers, an illuminated amethyst interaction, and a smaller five-place constellation.
